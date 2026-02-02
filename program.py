@@ -23,7 +23,6 @@ def get_days_from_today(date: str) -> int:
         # Різниця між датами
         delta = today - given_date
 
-        # Повертаємо різницю у днях
         return delta.days
 
     except ValueError:
@@ -69,7 +68,6 @@ def get_numbers_ticket(min: int, max: int, quantity: int) -> list[int]:
     # Генерація унікальних чисел
     numbers = random.sample(range(min, max + 1), quantity)
 
-    # Сортування результату
     return sorted(numbers)
 
 # Завдання 3
@@ -106,15 +104,11 @@ def normalize_phone(phone_number: str) -> str:
     :return: нормалізований номер телефону з кодом України(+38XXXXXXXXXX)
     """
 
-    # Видаляємо всі символи, крім цифр і '+'
-    phone_number = re.sub(r"[^\d+]", "", phone_number.strip())
+    # Залишаємо тільки цифри
+    phone_number = re.sub(r"\D", "", phone_number)
 
-    # Якщо номер починається з '+', вважаємо що код є
-    if phone_number.startswith("+"):
-        return phone_number
-
-    # Якщо номер починається з '380', додаємо '+'
-    if phone_number.startswith("38"):
+    # Якщо номер уже з кодом України
+    if phone_number.startswith("380"):
         return f"+{phone_number}"
 
     # В іншому випадку додаємо повний код країни
@@ -146,8 +140,15 @@ def get_upcoming_birthdays(users: list) -> list:
     for user in users:
         # парсимо дату народження
         birthday = datetime.datetime.strptime(user["birthday"], "%Y.%m.%d").date()
+
         # замінюєм рік на поточний
         birthday = birthday.replace(year=today.year)
+
+        # якщо день народження вже пройшов, то додаємо рік.
+        # це потрібно для вирішення корнер кейсів коли сьогодні 30 грудня,
+        # а у людини день народження в січні
+        if birthday < today:
+            birthday = birthday.replace(year=today.year + 1)
 
         # перевірка тільки на 7 днів вперед
         if 0 <= (birthday - today).days <= 7:
